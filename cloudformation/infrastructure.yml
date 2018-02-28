@@ -169,6 +169,7 @@ Resources:
             ImageId:  !FindInMap [AWSRegionToAMI, !Ref "AWS::Region", AMI]
             InstanceType: !Ref InstanceType
             IamInstanceProfile: !Ref InstanceProfile
+            KeyName: "ansible_jenkins"
             SecurityGroups: 
                 - !Ref ApplicationSecurityGroup
             UserData: !
