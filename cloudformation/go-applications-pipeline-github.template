@@ -557,11 +557,7 @@ Outputs:
         Description: The URL for the created pipeline
         Value: !Sub https://${AWS::Region}.console.aws.amazon.com/codepipeline/home?region=${AWS::Region}#/view/${ApplicationName}      
 
-    CodeDeployApplication:
-        Description: The CodeDeploy application used across all environments
-        Value: !Ref CodeDeployApplication
-        Export:
-            Name: !Sub CodeDeployApplication-${ApplicationName}
+
 
     CodeDeployServiceRoleArn:
         Description: The CodeDeploy service role used across all environments

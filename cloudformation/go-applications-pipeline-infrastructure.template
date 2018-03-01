@@ -178,24 +178,34 @@ Resources:
             UserData: !
                 "Fn::Base64": !Sub 
                     - |+
+                        
                         #!/bin/bash
 
                         # Set up a CloudFormation wait signal, so we can notify when the CodeDeploy agent is running
-                        yum install -y aws-cfn-bootstrap
-                        /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource LaunchConfiguration
+                        sudo rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+                        sudo yum -y install python-pip
+                        /usr/bin/easy_install --script-dir /opt/aws/bin https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
+                        sudo cp -f `pip show aws-cfn-bootstrap 2> /dev/null | egrep  \"^Location\" | awk -F \":\" ' { print $2 }'`/init/redhat/cfn-hup /etc/init.d/
+                        sudo chmod 755 /etc/init.d/cfn-hup
+                        sudo chkconfig --add cfn-hup
+                        sudo /opt/aws/bin/cfn-init -v
+                        #sudo yum install -y aws-cfn-bootstrap
+                        sudo /opt/aws/bin/cfn-init -v 
                         
                         # Install CodeDeploy agent
-                        yum -y update
-                        yum install -y ruby
+                        sudo yum -y update
+                        sudo yum install -y ruby
                         cd /home/ec2-user
-                        curl -O https://${InstallerBucket}.s3.amazonaws.com/latest/install
-                        chmod +x ./install
-                        ./install auto
+                        sudo curl -O https://${InstallerBucket}.s3.amazonaws.com/latest/install
+                        sudo chmod +x ./install
+                        sudo ./install auto
 
                         # Send a success/failure signal to CloudFormation based on the exit status of the last command
-                        /opt/aws/bin/cfn-signal -e $? --region ${AWS::Region} --stack ${AWS::StackName} --resource AutoScalingGroup
-                    - InstallerBucket:
+                        sudo /opt/aws/bin/cfn-signal -e $? --region ${AWS::Region} --stack ${AWS::StackName} --resource AutoScalingGroup
+
+                        - InstallerBucket:
                         Fn::FindInMap: [ CodeDeployInstallerBuckets, !Ref "AWS::Region", Bucket]
+
 
     ###########################################
     # Load Balancer
