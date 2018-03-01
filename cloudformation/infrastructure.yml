@@ -178,19 +178,19 @@ Resources:
                         #!/bin/bash
 
                         # Set up a CloudFormation wait signal, so we can notify when the CodeDeploy agent is running
-                        yum install -y aws-cfn-bootstrap
+                        sudo yum install -y aws-cfn-bootstrap
                         /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource LaunchConfiguration
                         
                         # Install CodeDeploy agent
-                        yum -y update
-                        yum install -y ruby
+                        sudo yum -y update
+                        sudo yum install -y ruby
                         cd /home/ec2-user
                         curl -O https://${InstallerBucket}.s3.amazonaws.com/latest/install
                         chmod +x ./install
                         ./install auto
 
                         # Send a success/failure signal to CloudFormation based on the exit status of the last command
-                        #/opt/aws/bin/cfn-signal -e $? --region ${AWS::Region} --stack ${AWS::StackName} --resource AutoScalingGroup
+                        #   /opt/aws/bin/cfn-signal -e $? --region ${AWS::Region} --stack ${AWS::StackName} --resource AutoScalingGroup
                     - InstallerBucket:
                         Fn::FindInMap: [ CodeDeployInstallerBuckets, !Ref "AWS::Region", Bucket]
 
