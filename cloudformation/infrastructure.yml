@@ -170,11 +170,11 @@ Resources:
             InstanceType: !Ref InstanceType
             IamInstanceProfile: !Ref InstanceProfile
             BlockDeviceMappings:
-    - DeviceName: "/dev/sdk"
-      Ebs:
-        VolumeSize: '10'
-    - DeviceName: "/dev/sdc"
-      VirtualName: ephemeral0
+               - DeviceName: "/dev/sdk"
+                 Ebs:
+                   VolumeSize: '10'
+               - DeviceName: "/dev/sdc"
+                 VirtualName: ephemeral0
             KeyName: "ansible_jenkins"
             SecurityGroups: 
                 - !Ref ApplicationSecurityGroup
