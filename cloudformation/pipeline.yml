@@ -137,19 +137,7 @@ Resources:
                                         "EnvironmentName": "staging",
                                         "ArtifactS3Bucket": "${ArtifactS3Bucket}"
                                     }
-                        - 
-                            Name: DeployApplication
-                            RunOrder: 2
-                            InputArtifacts: 
-                                - Name: Built
-                            ActionTypeId:
-                                Category: Deploy
-                                Owner: AWS
-                                Version: 1
-                                Provider: CodeDeploy
-                            Configuration: 
-                                ApplicationName: !Ref ApplicationName
-                                DeploymentGroupName: staging
+                      
                 - 
                     Name: Approvals
                     Actions:
