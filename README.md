@@ -150,4 +150,4 @@ The approval can be configured to trigger an [Amazon Simple Notification Service
 
 This stage deploys a whole new environment (everything in the architecture diagram) for your production environment. This ensures an identical configuration between environments, reducing false positives in your testing. 
 
-The first time the pipeline stage runs, it will create the environment from scratch. On future runs of the pipeline, it will apply any updates via a [CloudFormation stack update](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks.html).
+The first time the pipeline stage runs, it will create the environment from scratch. On future runs of the pipeline, it will apply any updates via a [CloudFormation stack update](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks.html)..
