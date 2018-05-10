@@ -73,7 +73,7 @@ You can read or modify the infrastructure deployed in [cloudformation/infrastruc
 
 A sample Go application is included (see [main.go](main.go)) that acts as a simple webserver. 
 
-When changes are made to the Go application, [AWS CodePipeline](https://aws.amazon.com/codepipeline) will automatically take the changes through the deployment pipeline.
+When changes are made to the Go application, [AWS CodePipeline](https://aws.amazon.com/codepipeline) will automatically take the changes through the deployment pipeline..
 
 [AWS CodeBuild](https://aws.amazon.com/codebuild) will run all tests, build the application, and then archive successful builds to [Amazon S3](https://aws.amazon.com/s3).
 
