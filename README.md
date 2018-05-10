@@ -4,7 +4,7 @@
 
 This repository provides an easy-to-deploy pipeline for the development, testing, building and deployment of applications written in Go. Although this example is tailored to Go, it can be easily modified to deploy applications written in other languages too.
 
-Services Used:
+Services Used: 
  
  * [AWS CodePipeline](https://aws.amazon.com/codepipeline/) for pipeline creation.
  * [AWS CodeBuild](https://aws.amazon.com/codebuild/) for testing and building your Go application(s).
