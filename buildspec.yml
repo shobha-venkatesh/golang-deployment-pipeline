@@ -18,7 +18,7 @@ phases:
       # - echo “machine git-codecommit.us-west-2.amazonaws.com” >> ~/.netrc
       - echo “login $GIT_USER” >> ~/.netrc
       - echo “password $GIT_PASS” >> ~/.netrc
-      - git clone -b $BRANCH_NAME $GIT_REPO
+      - git clone -b develop $GIT_REPO
       # Ensure code passes all lint tests
       - golint -set_exit_status
 

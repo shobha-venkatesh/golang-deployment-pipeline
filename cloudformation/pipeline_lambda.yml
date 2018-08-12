@@ -39,7 +39,7 @@ Parameters:
         Type: String
         Default: golang-deployment-pipeline   
 
-    RepositoryBranch:
+    GitHubBranch:
         Description: Enter the GitHub branch to monitored
         Type: String
         Default: develop
