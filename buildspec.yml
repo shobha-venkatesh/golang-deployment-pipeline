@@ -16,9 +16,10 @@ phases:
   pre_build: 
     commands:
       # - echo “machine git-codecommit.us-west-2.amazonaws.com” >> ~/.netrc
+      - echo "$GIT_REPO"
       - echo “login $GIT_USER” >> ~/.netrc
       - echo “password $GIT_PASS” >> ~/.netrc
-      - git clone -b develop $GIT_REPO
+      - git clone -b develop https://github.com/shobha-venkatesh/golang-deployment-pipeline.git
       # Ensure code passes all lint tests
       - golint -set_exit_status
 
