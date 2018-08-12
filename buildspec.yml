@@ -1,5 +1,12 @@
 version: 0.1
-            
+variables:
+  BRANCH_NAME: “develop”
+  MAJOR_VERSION: “1”
+  MINOR_VERSION: “0”
+  GIT_REPO: “https://github.com/shobha-venkatesh/golang-deployment-pipeline.git"
+parameter-store:
+  GIT_USER: "GIT_USERNAME"
+  GIT_PASS: “GIT_PWD”
 phases:
 
   install: 
@@ -8,7 +15,10 @@ phases:
 
   pre_build: 
     commands:
-
+      # - echo “machine git-codecommit.us-west-2.amazonaws.com” >> ~/.netrc
+      - echo “login $GIT_USER” >> ~/.netrc
+      - echo “password $GIT_PASS” >> ~/.netrc
+      - git clone -b $BRANCH_NAME $GIT_REPO
       # Ensure code passes all lint tests
       - golint -set_exit_status
 
@@ -19,6 +29,8 @@ phases:
     commands:
 
       # Build our application
+      - cd golang-deployment-pipeline.git
+      - bash git_tagging.sh
       - go build -o app
 
 artifacts:

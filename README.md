@@ -73,7 +73,7 @@ You can read or modify the infrastructure deployed in [cloudformation/infrastruc
 
 A sample Go application is included (see [main.go](main.go)) that acts as a simple webserver. 
 
-When changes are made to the Go application, [AWS CodePipeline](https://aws.amazon.com/codepipeline) will automatically take the changes through the deployment pipeline.
+When changes are made to the Go application, [AWS CodePipeline](https://aws.amazon.com/codepipeline) will automatically take the changes through the deployment pipeline..
 
 [AWS CodeBuild](https://aws.amazon.com/codebuild) will run all tests, build the application, and then archive successful builds to [Amazon S3](https://aws.amazon.com/s3).
 
@@ -150,4 +150,4 @@ The approval can be configured to trigger an [Amazon Simple Notification Service
 
 This stage deploys a whole new environment (everything in the architecture diagram) for your production environment. This ensures an identical configuration between environments, reducing false positives in your testing. 
 
-The first time the pipeline stage runs, it will create the environment from scratch. On future runs of the pipeline, it will apply any updates via a [CloudFormation stack update](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks.html).
+The first time the pipeline stage runs, it will create the environment from scratch. On future runs of the pipeline, it will apply any updates via a [CloudFormation stack update](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks.html)....
