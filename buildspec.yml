@@ -30,7 +30,7 @@ phases:
     commands:
 
       # Build our application
-      - cd golang-deployment-pipeline.git
+      - cd golang-deployment-pipeline
       - bash git_tagging.sh
       - go build -o app
 
