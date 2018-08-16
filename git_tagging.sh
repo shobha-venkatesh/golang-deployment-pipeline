@@ -23,7 +23,7 @@ if [[ $last_tag ]]; then
         let patch_max=$patch
     fi
     echo 'Latest version:' $major_max'.'$minor_max'.'$patch_max
-    let patch_max=($patch_max+1)
+    let patch_max=$patch_max+1
 fi
 echo "${BRANCH_NAME}"
 echo "${MAJOR_VERSION}"
