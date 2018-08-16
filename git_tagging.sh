@@ -9,21 +9,21 @@ echo $(git describe --abbrev=0 --tags)
 echo "hellll000"
 last_tag=$(git describe --abbrev=0 --tags)
 if [[ $last_tag ]]; then
-version=$(echo $last_tag | grep -o '[^-]*$')
+    version=$(echo $last_tag | grep -o '[^-]*$')
     major=$(echo $version | cut -d. -f1)
     minor=$(echo $version | cut -d. -f2)
     patch=$(echo $version | cut -d. -f3)
-if [ "$major_max" -lt "$major" ]; then
+    if [ "$major_max" -lt "$major" ]; then
         let major_max=$major
     fi
-if [ "$minor_max" -lt "$minor" ]; then
+    if [ "$minor_max" -lt "$minor" ]; then
         let minor_max=$minor
     fi
-if [ "$patch_max" -lt "$patch" ]; then
+    if [ "$patch_max" -lt "$patch" ]; then
         let patch_max=$patch
     fi
-echo 'Latest version:' $major_max'.'$minor_max'.'$patch_max
-let patch_max=($patch_max+1)
+    echo 'Latest version:' $major_max'.'$minor_max'.'$patch_max
+    let patch_max=($patch_max+1)
 fi
 echo "${BRANCH_NAME}"
 echo "${MAJOR_VERSION}"
