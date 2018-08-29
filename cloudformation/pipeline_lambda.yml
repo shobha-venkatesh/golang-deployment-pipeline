@@ -368,6 +368,11 @@ Resources:
                             "Resource": "arn:aws:lambda:us-west-2:181079104366:function:createami"
                     },
                     {
+                            "Action": "lambda:*",
+                            "Effect": "Allow",
+                            "Resource": "arn:aws:lambda:us-west-2:181079104366:function:GitTagging"
+                    },                    
+                    {
                             "Action": "s3:*",
                             "Effect": "Allow",
                             "Resource": "*"

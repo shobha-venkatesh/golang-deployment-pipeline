@@ -49,4 +49,4 @@ fi
 echo 'Switching to new version:' $major_max'.'$minor_max''
 $(git tag -a $major_max.$minor_max $branch_name -m "Version $major_max.$minor_max")
 echo 'Push tag to remote'
-$(git push origin $branch_name-$major_max.$minor_max $branch_name)
+$(git push origin $major_max.$minor_max $branch_name)
