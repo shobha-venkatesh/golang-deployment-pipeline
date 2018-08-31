@@ -35,7 +35,7 @@ def createAmi():
             TransferAmiFlag = ''
             ExcludedDevicesList = []
             SkipAmi = False
-            AmiDate = 1                                                          # Default date of AMI if no date is specified
+            AmiDate = now.day                                                          # Default date of AMI if no date is specified
             AmiTime = 0                                                          # Default time of AMI if no time is specified
 
             for tag in Instance['Tags']:                                         # Get required tag values and transform

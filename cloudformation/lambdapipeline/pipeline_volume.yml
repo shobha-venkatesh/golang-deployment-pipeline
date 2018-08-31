@@ -12,28 +12,46 @@ Parameters:
         Description: This will be used to name the pipeline and build resources
         Type: String
         AllowedPattern: '[A-Za-z0-9-]+'
+        Default: "stack"
     
+    S3Bucket:
+        Type: String
+        Description: "S3 bucket to use for artifacts. Just bucket Name; not URL. IAM user should have access to the bucket."
+        Default: awsci-iac
+
     ArtifactS3Bucket:
         Description: An existing S3 bucket within this AWS account
         Type: String
+        Default: awsci-iac
 
     GitHubOAuthToken: 
         Description: Create a token with 'repo' and 'admin:repo_hook' permissions here https://github.com/settings/tokens
         Type: String
+        Default: "8527bcdd3aa3bd13ee0488919e2eebe9b1cecb52"
 
     GitHubUser:
         Description: Enter GitHub username of the repository owner
         Type: String
+        Default: "shobha-venkatesh"
 
     GitHubRepository:
         Description: Enter the repository name that should be monitored for changes
         Type: String
+        Default: "golang-deployment-pipeline"
 
     GitHubBranch:
         Description: Enter the GitHub branch to monitored
         Type: String
         Default: master
+    S3Key:
+        Type: String
+        Description: "S3 key within S3Bucket."
+        Default: "golang/operations/cicd/createvolume.zip"
 
+    Email:
+        Description: The email address to which CodePipeline sends pipeline notifications.
+        Type: String
+        Default: "shobha.venkatesh@accenture.com"
 Metadata:
 
     AWS::CloudFormation::Interface:
@@ -52,6 +70,12 @@ Metadata:
                     - GitHubUser
                     - GitHubRepository
                     - GitHubBranch
+            -   
+                Label: 
+                    default: Email address
+                Parameters:
+                    - Email
+
             
         ParameterLabels:
             ApplicationName: 
@@ -66,8 +90,35 @@ Metadata:
                 default: Repository Branch
             GitHubOAuthToken: 
                 default: OAuth2 Token
+            Email:
+                default: Email address     
 
 Resources:
+    
+    CodePipelineSNSTopic:
+        Type: AWS::SNS::Topic
+        Properties:
+            Subscription:
+                -  Endpoint: !Ref Email
+                   Protocol: email
+
+    createvolume:
+        Type: AWS::Lambda::Function
+        DependsOn: 
+        -  CodePipelineLambdaRole
+        -  LambdaCodePipelineExecutionPolicy
+        
+        Properties:
+           Code:
+               S3Bucket: !Ref S3Bucket
+               S3Key: !Ref S3Key
+           Role: !Sub ${LambdaExecutionRole.Arn}
+           Description: "create volume executing from pipeline"
+           Timeout: 240
+           Handler: lambda_function.lambda_handler
+           Runtime: python2.7
+           MemorySize: 128
+
 
     CodePipeline:
         Type: AWS::CodePipeline::Pipeline
@@ -112,44 +163,37 @@ Resources:
                             Configuration: 
                                 ProjectName: !Ref CodeBuild
                 -
-                    Name: Staging
+                    Name: LambdaStage
                     Actions:
                         - 
-                            Name: DeployInfrastructure
-                            RunOrder: 1
+                            Name: MyLambdaFunction
+                            RunOrder: 3
                             InputArtifacts:
                                 - Name: Built
                             ActionTypeId:
-                                Category: Deploy
+                                Category: Invoke
                                 Owner: AWS
                                 Version: 1
-                                Provider: CloudFormation
+                                Provider: Lambda
                             Configuration:
-                                ActionMode: REPLACE_ON_FAILURE
-                                RoleArn: !Sub ${CodePipelineCloudFormationRole.Arn}
-                                Capabilities: CAPABILITY_NAMED_IAM
-                                StackName: !Sub ${ApplicationName}-staging
-                                TemplatePath: Built::cloudformation/infrastructure.yml
-                                TemplateConfiguration: Built::config/staging.conf
-                                ParameterOverrides: !Sub |
-                                    {
-                                        "ApplicationName": "${ApplicationName}",
-                                        "EnvironmentName": "staging",
-                                        "ArtifactS3Bucket": "${ArtifactS3Bucket}"
-                                    }
-                        -
-                            Name: DeployApplication
-                            RunOrder: 2
-                            InputArtifacts:
-                                - Name: Built
-                            ActionTypeId:
-                                Category: Deploy
-                                Owner: AWS
-                                Version: 1
-                                Provider: CodeDeploy
-                            Configuration:
-                                ApplicationName: !Ref ApplicationName
-                                DeploymentGroupName: staging
+                                FunctionName: !Ref createvolume
+                                # NotificationArn: !Ref CodePipelineSNSTopic
+                                # CustomData: !Sub 'A new change set was created for the LambdaStage . Do you want to implement the changes?'
+                                # ActionMode: CREATE_UPDATE
+                                # RoleArn: !Sub ${LambdaExecutionRole.Arn}
+                                # Capabilities: CAPABILITY_NAMED_IAM
+                                # StackName: !Sub ${ApplicationName}-lambda
+                                # TemplatePath: Built::cloudformation/infrastructure.yml
+                                # TemplateConfiguration: Built::config/production.conf
+                                # ParameterOverrides: !Sub |
+                                #     {
+                                #         "ApplicationName": "${ApplicationName}",
+                                #         "EnvironmentName": "production",
+                                #         "ArtifactS3Bucket": "${ArtifactS3Bucket}"
+                                #     }
+
+
+
                 - 
                     Name: Approvals
                     Actions:
@@ -160,7 +204,13 @@ Resources:
                                 Owner: AWS
                                 Version: 1
                                 Provider: Manual
-                                
+                            Configuration:
+                                NotificationArn: !Ref CodePipelineSNSTopic
+                            RunOrder: 1    
+                
+
+
+
                 -
                     Name: Production
                     Actions:
@@ -188,6 +238,153 @@ Resources:
                                         "ArtifactS3Bucket": "${ArtifactS3Bucket}"
                                     }
                         
+    
+
+ 
+
+    LambdaExecutionRole:
+        Type: AWS::IAM::Role
+        Properties:
+            AssumeRolePolicyDocument: |
+                {
+                    "Statement": [{
+                        
+                        "Effect": "Allow",
+                        "Sid": "",
+                        "Principal": { 
+                            "Service": "lambda.amazonaws.com" 
+                        },
+                        "Action": "sts:AssumeRole"
+                    }]
+                }                
+                
+            Policies:
+                - 
+                    PolicyName: !Sub ${ApplicationName}-CloudFormation-${AWS::Region}-lambdarole
+                    PolicyDocument: !Sub |                    
+                        {
+                            "Statement": [{
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "logs:*"
+                                    ],
+
+                                    "Resource": "*"
+                            },
+                            
+                            {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "lambda:AddPermission"
+                                    ],
+                                    "Resource": "*"
+                            },
+                            {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:*" ,
+                                        "ec2:*",
+                                        "iam:ListInstanceProfiles",
+                                        "iam:ListRoles",
+                                        "iam:PassRole",
+                                        "cloudformation:CreateStack",
+                                        "cloudformation:DeleteStack",
+                                        "cloudformation:DescribeStack",
+                                        "cloudformation:UpdateStack",
+                                        "cloudwatch:GetMetricStatistics",
+                                        "lambda:*",
+                                        "iam:*"
+
+                                    ],
+                                    "Resource": "*"
+                            },
+                            {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "codepipeline:PutJobSuccessResult",
+                                        "codepipeline:PutJobFailureResult"
+
+                                    ],
+                                    "Resource": "*"
+                            }
+
+                            ]
+
+                        }
+
+    LambdaCodePipelineExecutionPolicy:
+        DependsOn: 
+        -  CodePipelineLambdaRole
+        Type: AWS::IAM::Policy
+        Properties: 
+            Roles: 
+                -   
+                   Ref: CodePipelineLambdaRole                             
+            PolicyName: !Sub ${ApplicationName}-CloudFormation-${AWS::Region}-LambdaRolePolicy
+            PolicyDocument: !Sub |                    
+                {
+                    "Version":"2012-10-17",
+                    "Statement": [{
+                            "Effect": "Allow",
+                            "Action": [
+                                "logs:*"
+                            ],
+
+                            "Resource": "*"
+                            },
+                            
+                    {
+                            "Effect": "Allow",
+                            "Action": [
+                                "codepipeline:PutJobSuccessResult",
+                                "codepipeline:PutJobFailureResult"
+                            ],
+                            "Resource": "*"
+                    },
+                    {
+                            "Action": "lambda:*",
+                            "Effect": "Allow",
+                            "Resource": "arn:aws:lambda:us-west-2:181079104366:function:createvolume"
+                    },
+                    {
+                            "Action": "s3:*",
+                            "Effect": "Allow",
+                            "Resource": "*"
+                    },
+                    {
+                            "Action": "iam:*",
+                            "Effect": "Allow",
+                            "Resource": "*"
+                    }
+
+
+                    ]
+
+                }
+    CodePipelineLambdaRole:
+        Type: AWS::IAM::Role
+        Properties:
+            Path: /
+            AssumeRolePolicyDocument: |
+                {   
+                    "Version":"2012-10-17",
+                    "Statement": [{
+                        "Action": "sts:AssumeRole",
+                        "Effect": "Allow",
+                        "Principal": { 
+                            "Service": "lambda.amazonaws.com" 
+                        }
+                    },
+                    {
+                        "Action": "sts:AssumeRole",
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "s3.amazonaws.com"
+                        }
+
+                    }
+                    ]
+                }                                  
                         
 
     CodeBuild:
@@ -270,7 +467,14 @@ Resources:
                                         "cloudformation:ExecuteChangeSet",
                                         "cloudformation:SetStackPolicy",
                                         "cloudformation:ValidateTemplate",
-                                        "iam:PassRole"
+                                        "iam:PassRole",
+                                        "lambda:*",
+                                        "sns:*",
+                                        "sqs:*",
+                                        "ecs:*",
+                                        "cloudwatch:*",
+                                        "codepipeline:*",
+                                        "iam:*"
                                     ],
                                     "Resource": "*",
                                     "Effect": "Allow"
@@ -353,7 +557,8 @@ Resources:
                                 "tag:GetTags",
                                 "tag:GetResources",
                                 "sns:Publish",
-                                "cloudwatch:DescribeAlarms"
+                                "cloudwatch:DescribeAlarms",
+                                "iam:*"
                             ],
                             "Resource": "*"
                             }
@@ -403,6 +608,32 @@ Resources:
                                 }
                             ]
                         }
+    
+    EventRule:
+        Type: 'AWS::Events::Rule'
+        Properties:
+            Description: Events Rule CodePipeline
+            EventPattern:
+                source:
+                    - aws.codepipeline
+                detail-type:
+                    - CodePipeline Pipeline Execution State Change
+                detail:
+                    state:
+                        - SUCCEEDED
+                        - FAILED
+            State: ENABLED
+            Targets:
+                - 
+                    Arn: !Ref CodePipelineSNSTopic 
+                    Id: CodePipelineSNSTopic
+                    InputTransformer:
+                        InputTemplate: '"The Pipeline <pipeline> has <pipeline-state>. Go to https://console.aws.amazon.com/codepipeline/home?region=us-west-2#/view/<pipeline>" '
+                        InputPathsMap:
+                            pipeline: "$.detail.pipeline" 
+                            pipeline-state: "$.detail.state"    
+    
+    
 
 Outputs:
 

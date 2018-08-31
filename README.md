@@ -1,4 +1,4 @@
-# Deployment Pipeline for Go Applications on AWS
+# Deployment Pipeline for Go Applications on AWS 
 
 ![pipeline-screenshot](images/pipeline-screenshot.png)
 

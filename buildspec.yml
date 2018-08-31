@@ -1,5 +1,4 @@
 version: 0.1
-            
 phases:
 
   install: 
@@ -8,7 +7,7 @@ phases:
 
   pre_build: 
     commands:
-
+      # - echo “machine git-codecommit.us-west-2.amazonaws.com” >> ~/.netrc
       # Ensure code passes all lint tests
       - golint -set_exit_status
 
